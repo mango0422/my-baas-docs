@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_baas_docs=self.webpackChunkmy_baas_docs||[]).push([[1903],{1912:s=>{s.exports=JSON.parse('{"blogBasePath":"/my-baas-docs/blog","blogTitle":"Blog","authorsListPath":"/my-baas-docs/blog/authors"}')}}]);
