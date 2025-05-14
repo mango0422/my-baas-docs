@@ -1,0 +1,17 @@
+---
+title: "운영·배포 패턴"
+sidebar_position: 5
+description: "Gateway·Service Mesh·오케스트레이션·릴리스 전략·관측성"
+---
+
+# 운영 / 배포 레이어
+
+| 레이어             | 주요 구성                 | 구현 예                     |
+| ------------------ | ------------------------- | --------------------------- |
+| **Gateway**        | 인증·권한·CORS·Rate-Limit | Spring Cloud Gateway, NGINX |
+| **Service Mesh**   | mTLS·트래픽 분할·카나리아 | Istio, Linkerd              |
+| **오케스트레이션** | 자가 복구·오토스케일      | Kubernetes / OpenShift      |
+| **릴리스**         | Blue-Green·Canary·A/B     | Argo Rollouts, Flagger      |
+| **관측성**         | 메트릭·로그·트레이스      | Prometheus, Loki, Jaeger    |
+
+> **NGINX Plus + GitOps** 조합은 작은 팀에서도 손쉽게 Canary 배포와 트래픽 관찰을 실전 적용할 수 있습니다.

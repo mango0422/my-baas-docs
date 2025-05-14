@@ -1,0 +1,18 @@
+---
+title: "핵심 설계 원칙"
+sidebar_position: 2
+description: "경계·독립성·API 우선·장애 격리 등 MSA 설계 8대 원칙"
+---
+
+# MSA 핵심 설계 원칙
+
+| 영역            | 원칙                                       | 실전 팁                             |
+| --------------- | ------------------------------------------ | ----------------------------------- |
+| **경계 & 책임** | 서비스는 **단일 Bounded Context**에 집중   | DDD 컨텍스트 맵 그려보기            |
+| **독립성**      | 코드·데이터·릴리스를 서비스마다 분리       | 컨테이너 이미지·DB-schema 분리      |
+| **API 우선**    | Contract-First + 버전 관리                 | OpenAPI, gRPC IDL, GraphQL SDL      |
+| **자율 팀**     | 팀이 스택·배포 주기 자율 결정              | Polyglot 허용, 공통 DevX 표준화     |
+| **장애 격리**   | 실패가 전파되지 않도록 회로 차단, 타임아웃 | Resilience4j, Istio Fault Injection |
+| **자동화**      | CI/CD·테스트·보안 스캔 전 과정 자동        | GitHub Actions → Argo CD            |
+| **관측성**      | 로그·메트릭·트레이스 3종 세트              | Loki, Prometheus, Jaeger            |
+| **보안**        | Zero-Trust, mTLS, JWT                      | Gateway·Service Mesh로 일원화       |

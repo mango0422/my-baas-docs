@@ -1,0 +1,33 @@
+---
+title: "데이터 & 트랜잭션 관리"
+sidebar_position: 6
+description: "DB-per-service, Outbox, Saga 패턴 등 분산 데이터 일관성 전략"
+---
+
+# 데이터 및 분산 트랜잭션
+
+## DB-per-Service
+
+- 스키마 충돌·락 경합 제거
+- 서비스 경계와 데이터 경계 일치
+
+## Outbox 패턴
+
+1. 로컬 DB에 이벤트 레코드 삽입
+2. CDC(예: Debezium) → Kafka Publish
+3. “로깅 실패 = 트랜잭션 실패” 문제 해소
+
+## Saga 패턴
+
+- **행위 기준 보상**(Compensating Action)
+- 상태 전환: `PENDING → COMPLETED / COMPENSATED`
+
+```mermaid
+sequenceDiagram
+  participant A as Service A
+  participant B as Service B
+  participant C as Service C
+  A->>B: Local TX
+  B->>C: Local TX
+  Note over B,C: 실패 시<br/>보상 트랜잭션 호출
+```

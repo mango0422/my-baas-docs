@@ -1,0 +1,36 @@
+---
+title: "보안 모델"
+sidebar_position: 7
+description: "Zero-Trust, mTLS, OAuth2/JWT, Secret 관리 등 MSA 보안 전략"
+---
+
+# 보안 모델
+
+## Zero-Trust & mTLS
+
+- 서비스 간 통신 기본 암호화
+- Istio `PeerAuthentication` 예:
+
+```yaml
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+spec:
+  mtls:
+    mode: STRICT
+```
+
+## 인증·인가
+
+- **OAuth2 + JWT**
+- JWK Set URL → Gateway / Resource Server 검증
+
+## Secret 관리
+
+| 방법                                      | 특징                  |
+| ----------------------------------------- | --------------------- |
+| **Kubernetes Secrets + SealedSecrets**    | GitOps와 궁합         |
+| **HashiCorp Vault / AWS Secrets Manager** | 동적 DB 크리덴셜 회전 |
+
+> “보안을 기능으로 붙이지 말고 **플랫폼 레벨**에서 기본값으로 활성화” – Zero-Trust 원칙

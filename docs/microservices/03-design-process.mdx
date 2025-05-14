@@ -1,0 +1,20 @@
+---
+title: "서비스 설계 5-Step"
+sidebar_position: 3
+description: "도메인 분해부터 관측성·보안 토대까지 단계별 설계 프로세스"
+---
+
+# 설계 프로세스: 5-Step
+
+1. **도메인 분해**
+   - 이벤트 스토밍 → Bounded Context 확정
+2. **API 계약 수립**
+   - REST / gRPC / GraphQL 중 선택 → Contract Testing
+3. **데이터 모델링**
+   - Polyglot Persistence: RDB, 문서 DB, KV, 시계열
+4. **비동기 통합**
+   - Kafka·RabbitMQ + Outbox·Saga 패턴
+5. **관측성 & 보안 기반 구축**
+   - mTLS 기본, OpenTelemetry Sidecar 삽입
+
+> 설계 단계에서 **‘작게 시작 → 점진 개선’** 전략이 필수적입니다.
