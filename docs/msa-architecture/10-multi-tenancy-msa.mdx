@@ -1,0 +1,50 @@
+---
+id: 10-multi-tenancy-msa
+title: "10. 멀티 테넌시 MSA 전략"
+
+sidebar_position: 11
+---
+
+> SaaS형 금융 플랫폼에서 **테넌트(고객사) 분리** 는 필수 요구 사항입니다.
+
+## 10.1 수준(Level)별 격리 옵션
+
+| 수준   | 방식                                   | 장점           | 단점           |
+| ------ | -------------------------------------- | -------------- | -------------- |
+| **L1** | 데이터베이스 공유, 스키마/Row 파티셔닝 | 비용 효율      | 완전 격리 아님 |
+| **L2** | DB 인스턴스(Cluster) 분리              | 데이터 격리 ↑  | 운영 복잡 ↑    |
+| **L3** | 서비스 & 인프라 전부 분리              | 규제·보안 최상 | 비용·배포 부담 |
+
+## 10.2 Spring Boot 구현 (L1 예시)
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://db:3306/baas?currentSchema=#{tenantSchema}
+```
+
+Tenant Filter:
+
+```java
+public class TenantFilter extends OncePerRequestFilter {
+  protected void doFilterInternal(HttpServletRequest req, …) {
+    String tenantId = req.getHeader("X-TENANT-ID");
+    TenantContext.set(tenantId);     // ThreadLocal
+    filterChain.doFilter(req, res);
+  }
+}
+```
+
+`AbstractRoutingDataSource` 로 스키마를 스위칭.
+
+## 10.3 Armeria gRPC 예시 (L2+)
+
+1. **Tenant-Aware gRPC Stub**: `Metadata.Key<String> TENANT_ID`
+2. 서버에서 `ClientRequestContext.current()` 로 추출 → DB 라우팅
+3. Kubernetes 네임스페이스별로 DB Secret 분리
+
+## 10.4 데이터 격리 체크리스트
+
+- 각 테넌트 **키 관리(HSM)** 분리
+- 로그·메트릭도 테넌트 태그 부착 (`tenant_id` label)
+- SLA 차등 적용 시 **HPA** 정책을 테넌트별로 분기

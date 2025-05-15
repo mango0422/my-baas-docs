@@ -1,0 +1,101 @@
+---
+id: 11-grpc-deep-dive
+title: "11. gRPC 완전 정복: Spring Boot & Armeria"
+
+sidebar_position: 12
+---
+
+> **gRPC** 는 HTTP/2 + Protobuf 기반의 고성능 RPC 프레임워크입니다.
+
+## 11.1 .proto 정의
+
+```proto
+syntax = "proto3";
+package baas.grpc.account.deposit;
+option java_multiple_files = true;
+
+service DepositService {
+  rpc Deposit (DepositRequest) returns (DepositResponse);
+}
+
+message DepositRequest { string accountId = 1; double amount = 2; }
+message DepositResponse { bool success = 1; string txId = 2; string message = 3; }
+```
+
+## 11.2 Spring Boot 서버
+
+```gradle
+plugins {
+  id 'java'
+  id 'com.google.protobuf' version '0.9.5'
+}
+
+dependencies {
+  implementation 'io.grpc:grpc-netty-shaded:1.70.0'
+  implementation 'net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE'
+}
+
+@GrpcService
+public class DepositGrpcService extends DepositServiceGrpc.DepositServiceImplBase {
+  @Override
+  public void deposit(DepositRequest req, StreamObserver<DepositResponse> obs) {
+      // …도메인 로직
+      obs.onNext(resp);
+      obs.onCompleted();
+  }
+}
+```
+
+## 11.3 Armeria 통합
+
+```gradle
+implementation 'com.linecorp.armeria:armeria-grpc:1.32.0'
+```
+
+```java
+Server server = Server
+    .builder()
+    .http(8080)
+    .service(GrpcService.builder()
+        .addService(new DepositGrpcService())
+        .enableReflection()
+        .build())
+    .service("/docs/**", new DocService())   // REST + gRPC 문서
+    .build();
+server.start().join();
+```
+
+### 단일 포트에서 **REST + gRPC + WebSocket** 수용
+
+- Armeria는 `content-type` 네고로 프로토콜 자동 스위칭
+- Swagger/OpenAPI → `armeria-retrofit` 도구로 REST 클라이언트 생성
+
+## 11.4 클라이언트: Stream & Metadata
+
+```java
+ManagedChannel ch = ManagedChannelBuilder.forAddress("remit", 8443)
+                                          .usePlaintext()
+                                          .build();
+DepositServiceGrpc.DepositServiceStub stub =
+    MetadataUtils.attachHeaders(DepositServiceGrpc.newStub(ch), tenantMetadata);
+stub.deposit(req, obs);
+```
+
+- **Bidirectional Stream**: `depositChat()` 처럼 실시간 상태 알림
+- **Deadline & Retry**: `stub.withDeadlineAfter(3, TimeUnit.SECONDS)` + `retryPolicy`
+
+## 11.5 보안: mTLS & JWK
+
+1. Spring Boot – `grpc.ssl.enabled=true` + cert / key
+2. Armeria – `TlsConfig.builder().keyManager(cert, key).build()`
+3. JWT 인증 → `AuthInterceptor` 로 `Metadata` 토큰 검증 (JWK 캐시)
+
+## 11.6 모니터링
+
+| 지표        | 방법                                              |
+| ----------- | ------------------------------------------------- |
+| QPS·p95     | `grpc_server_handled_duration_seconds` Prometheus |
+| 메시지 크기 | `grpc_server_msg_received_total`                  |
+| 에러율      | `grpc_server_handled_total{code!~"OK"}`           |
+
+OpenTelemetry `GrpcTracing` 로 Trace ID 자동 삽입.

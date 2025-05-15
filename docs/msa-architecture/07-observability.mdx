@@ -1,0 +1,27 @@
+---
+id: 07-observability
+title: "7. Observability: 로그·메트릭·트레이싱"
+
+sidebar_position: 8
+---
+
+### 7.1 3대 기둥
+
+| 영역         | 도구            | Spring Boot                                             | Armeria                                          |
+| ------------ | --------------- | ------------------------------------------------------- | ------------------------------------------------ |
+| **로그**     | ELK / Loki      | `spring-boot-starter-logging` + Logback JSON → Filebeat | Armeria `Slf4jRequestLogger`                     |
+| **메트릭**   | Prometheus      | Micrometer (`micrometer-registry-prometheus`)           | Armeria `PrometheusMeterRegistries`              |
+| **트레이싱** | Jaeger / Zipkin | spring-cloud-sleuth + OpenTelemetry                     | Armeria `BraveService` / `OtelDecoratingService` |
+
+### 7.2 Trace ID 전파
+
+`X-B3-TraceId` → Spring Filter → Armeria `ClientRequestContext.current()`
+
+```java
+@Bean
+BraveService braveService(Tracing tracing) {
+    return BraveService.newDecorator(tracing);
+}
+```
+
+> **TIP** : gRPC 메서드명·메시지 크기를 `grpc_server_handled_total` 메트릭으로 노출하여 **QPS·P99 지연**을 대시보드에 표시.

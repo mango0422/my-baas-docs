@@ -17,3 +17,8 @@ hola:
   label: Hola
   permalink: /hola
   description: Hola tag description
+
+velog:
+  label: Velog
+  permalink: /velog
+  description: Velog tag description

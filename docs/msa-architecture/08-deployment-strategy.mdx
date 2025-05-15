@@ -1,0 +1,26 @@
+---
+id: 08-deployment-strategy
+title: "8. CI/CD & 배포 전략"
+
+sidebar_position: 9
+---
+
+### 8.1 GitOps + Kubernetes
+
+1. **Build**: GitHub Actions → `./gradlew bootBuildImage` (Spring) / `./gradlew jib` (Armeria)
+2. **Push**: OCI 이미지 → GHCR / ECR
+3. **Deploy**: Argo CD가 `kustomize` 변경 감지 → 자동 적용
+
+### 8.2 무중단 배포 옵션
+
+| 전략           | 특징                                    | Istio Ingress 예시              |
+| -------------- | --------------------------------------- | ------------------------------- |
+| **Blue/Green** | 새 버전(Pod) → 100% 전환 후 구버전 삭제 | `virtualService` weight 100 → 0 |
+| **Canary**     | 5 % → 20 % → 100 % 단계적               | `weight: 5` → `20` → `100`      |
+| **Shadow**     | 트래픽 복제, 사용자 미노출              | `mirrorPercentage: 100`         |
+
+### 8.3 금융권 체크리스트
+
+- **DB 마이그레이션** → _shadow write + dual read_ 후 switch
+- **배포 승인 프로세스** → Slack + ChatOps + e-sign
+- **릴리즈 노트 자동 생성** → `git-cliff`/`conventional-commits`

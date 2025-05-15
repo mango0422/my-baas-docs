@@ -1,0 +1,69 @@
+---
+id: 12-resilience-patterns
+title: "12. 고가용성을 위한 Resilience 패턴"
+
+sidebar_position: 13
+---
+
+> 금융 서비스는 **99.99 % 가용성** 이 요구됩니다.
+
+## 12.1 Circuit Breaker
+
+| 라이브러리                     | 설정 예                                      |
+| ------------------------------ | -------------------------------------------- |
+| **Resilience4j** (Spring Boot) | `@Retry`, `@CircuitBreaker(name="withdraw")` |
+| **Armeria**                    | `CircuitBreakerRule.onServerErrorStatus()`   |
+
+- 실패율 > 50 % & 요청 ≥ 20 → OPEN 30 초
+- Half-Open 상태에서 3 건 성공 시 CLOSE
+
+## 12.2 Retry & Backoff
+
+```yaml
+resilience4j.retry:
+  instances.withdraw:
+    max-attempts: 3
+    wait-duration: 500ms
+    exponential-backoff-multiplier: 2
+```
+
+Armeria Client:
+
+```java
+RetryRule rule = RetryRule.builder()
+    .onServerErrorStatus()
+    .withBackoff(Backoff.exponential(200, 2000))
+    .build();
+HttpClient retryingClient = client.decorate(RetryingClient.builder(rule).newDecorator());
+```
+
+## 12.3 Bulkhead
+
+- **ThreadPoolBulkhead** 로 동시 요청 수 제한
+- gRPC 스트림은 **SemaphoreBulkhead** 사용
+
+## 12.4 Rate Limiting
+
+| 구현                      | 특징                         |
+| ------------------------- | ---------------------------- |
+| Redis Lua 스크립트        | 분산 토큰 버킷, 초당 100 req |
+| Armeria `ThrottleBuilder` | 메모리 기반, 간단 테스트용   |
+
+## 12.5 Graceful Degradation
+
+- 추천 서비스 장애 시 **기본 베스트셀러** 반환
+- 결제 장애 시 **주문 예약 상태** 유지 + Webhook 재시도
+
+## 12.6 Chaos Engineering
+
+1. `chaos-mesh` / `Gremlin` 으로 네트워크 지연·패킷 드롭
+2. **SLO** 위반 여부 모니터링
+3. 자동 복구 정책 재검증
+
+---
+
+### 🔑 핵심 정리
+
+1. **Circuit Breaker + Retry** = 장애 전파 차단
+2. **Bulkhead + RateLimit** = 리소스 고갈 방지
+3. **Chaos 테스트** 로 복원력 가시화
