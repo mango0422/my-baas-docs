@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_baas_docs=self.webpackChunkmy_baas_docs||[]).push([[7472],{5513:s=>{s.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"DevOps \uc5d4\uc9c0\ub2c8\uc5b4\ub85c \uc2dc\uc791\ud558\ub294 TIL","permalink":"/my-baas-docs/blog/devops-til-start","unlisted":false,"date":"2025-05-15T00:00:00.000Z"}]}')}}]);

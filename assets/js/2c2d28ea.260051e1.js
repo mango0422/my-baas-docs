@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_baas_docs=self.webpackChunkmy_baas_docs||[]).push([[6216],{9078:a=>{a.exports=JSON.parse('{"metadata":{"permalink":"/my-baas-docs/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);
